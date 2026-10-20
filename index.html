@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>СОЮЗНЫЙ КЛУБ</title>
+    
+    <meta name="theme-color" content="#CC0D1A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: #F2F4F7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #212121; line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- АТМОСФЕРНЫЙ ФОН (Пульсирующие пятна) --- */
+        .bg-blobs {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden; pointer-events: none;
+        }
+        .blob {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4;
+            animation: pulse 8s infinite alternate ease-in-out;
+        }
+        .blob-1 { width: 300px; height: 300px; background: #CC0D1A; top: -50px; left: -50px; }
+        .blob-2 { width: 250px; height: 250px; background: #FFD700; bottom: 20%; right: -50px; animation-delay: 2s; }
+        .blob-3 { width: 200px; height: 200px; background: #CC0D1A; top: 40%; left: -80px; animation-delay: 4s; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.2) translate(20px, 20px); }
+        }
+
+        /* --- ШАПКА --- */
+        .header {
+            background: linear-gradient(135deg, #CC0D1A 0%, #990A14 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 10s ease infinite;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 20px rgba(204, 13, 26, 0.25);
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header-left { display: flex; align-items: center; }
+
+        .icon-box {
+            width: 45px; height: 45px; margin-right: 12px;
+            background-color: #fff; border-radius: 12px; padding: 6px;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+        .icon-box:active { transform: scale(0.95); }
+        .icon-box svg { width: 100%; height: 100%; }
+
+        .header-text h1 { color: #FFFFFF; font-size: 18px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .header-text p { color: #FFD700; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Кнопка меню (3 полоски) */
+        .menu-btn {
+            background: rgba(255, 255, 255, 0.15); border: none; border-radius: 10px;
+            width: 42px; height: 42px; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; cursor: pointer; gap: 5px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            backdrop-filter: blur(5px);
+        }
+        .menu-btn.active { background: rgba(255, 255, 255, 0.3); }
+        .menu-btn span { display: block; width: 20px; height: 2px; background-color: #fff; border-radius: 2px; transition: 0.3s; }
+        
+        /* Анимация полосок в крестик */
+        .menu-btn.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .menu-btn.active span:nth-child(2) { opacity: 0; transform: scale(0); }
+        .menu-btn.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* --- БОКОВОЕ МЕНЮ (Glassmorphism) --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s;
+            z-index: 1000; backdrop-filter: blur(3px);
+        }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        .sidebar {
+            position: fixed; top: 0; right: -320px;
+            width: 290px; height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+            z-index: 1001;
+            transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1); /* Пружинистая анимация */
+            display: flex; flex-direction: column;
+            padding-top: 20px;
+            border-left: 1px solid rgba(255,255,255,0.5);
+        }
+        .sidebar.active { right: 0; }
+
+        .sidebar-header {
+            padding: 0 20px 20px 20px; border-bottom: 1px solid #EAEAEA;
+            margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .sidebar-title { font-weight: 800; color: #990A14; font-size: 20px; letter-spacing: 1px; }
+        
+        .close-btn {
+            background: #F2F4F7; border: none; width: 34px; height: 34px;
+            border-radius: 50%; font-size: 18px; color: #555; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            transition: background 0.2s;
+        }
+        .close-btn:active { background: #E0E0E0; }
+
+        .menu-list { list-style: none; flex-grow: 1; padding: 0 15px; }
+        .menu-list li { margin-bottom: 5px; }
+        .menu-list a {
+            display: block; padding: 15px 20px;
+            color: #333; text-decoration: none; font-size: 16px; font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+        .menu-list a:active { background: #CC0D1A; color: #fff; transform: translateX(5px); }
+
+        /* --- КОНТЕНТ --- */
+        .page-container {
+            max-width: 800px; margin: 0 auto;
+            padding: 25px 15px 60px 15px;
+            display: none;
+        }
+        .page-container.active { display: block; }
+
+        /* Каскадная анимация карточек */
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            padding: 25px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            border: 1px solid #EAEAEA;
+            
+            opacity: 0;
+            transform: translateY(30px);
+            animation: cardEnter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* Задержка для каждой карточки (эффект волны) */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes cardEnter {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 24px; color: #990A14;
+            margin-bottom: 15px; padding-left: 15px;
+            border-left: 6px solid #FFD700; line-height: 1.3;
+            position: relative;
+        }
+        
+        p { font-size: 16px; color: #444; margin-bottom: 15px; text-align: left; }
+        p:last-child { margin-bottom: 0; }
+        
+        .intro p { font-size: 17px; color: #666; font-style: italic; border-left: 3px solid #EAEAEA; padding-left: 15px; }
+        
+        .bird-image {
+            width: 100%; border-radius: 16px; margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .bird-image:active { transform: scale(0.98); }
+        
+        .footer { text-align: center; color: #888; font-size: 13px; padding: 20px; margin-top: 20px; }
+
+        /* Стили для страницы Создателей */
+        .creators-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+        .creator-name {
+            display: block;
+            font-size: 28px;
+            font-weight: 900;
+            margin: 10px 0;
+            letter-spacing: 2px;
+        }
+        .creator-kolett {
+            color: #8E24AA; /* Насыщенный фиолетовый */
+            text-shadow: 0 2px 5px rgba(142, 36, 170, 0.2);
+        }
+        .creator-zloshtein {
+            color: #E6A800; /* Темно-желтый/золотой */
+            text-shadow: 0 2px 5px rgba(230, 168, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Атмосферный фон -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- ШАПКА -->
+    <div class="header">
+        <div class="header-left">
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24" width="100%" height="100%">
+                    <path d="M12 2L14.5 8.5L21 9L16 13.5L17.5 20L12 16.5L6.5 20L8 13.5L3 9L9.5 8.5L12 2Z" fill="#CC0D1A" />
+                    <path d="M10.5 11L8 15H10L12 11H10.5Z" fill="#FFD700"/>
+                    <path d="M14 10C13 10 11 11 10 13L11 14C11.5 12 13 11 14 11C15 11 16 12 16 13C16 15 14 16 12 16V17C15 17 17 15 17 13C17 11 15 10 14 10Z" fill="#FFD700"/>
+                </svg>
+            </div>
+            <div class="header-text">
+                <h1>СОЮЗНЫЙ КЛУБ</h1>
+                <p>Официальная вики</p>
+            </div>
+        </div>
+        
+        <button class="menu-btn" id="menuBtn" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+
+    <!-- БОКОВОЕ МЕНЮ -->
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">Навигация</div>
+            <button class="close-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="menu-list">
+            <li><a href="#" onclick="showPage('page-main')">История клуба</a></li>
+            <li><a href="#" onclick="showPage('page-thanks')">Благодарность</a></li>
+            <li><a href="#" onclick="showPage('page-news')">Новости</a></li>
+            <li><a href="#" onclick="showPage('page-creators')">Создатели</a></li>
+            <li><a href="#" onclick="showPage('page-birds')">Птички 🐦</a></li>
+        </ul>
+    </div>
+
+    <!-- СТРАНИЦА 1: ИСТОРИЯ -->
+    <div id="page-main" class="page-container active">
+        <div class="card intro">
+            <h2>История</h2>
+            <p>Добро пожаловать на страницу истории Союзного клуба. Здесь описаны все ключевые события, конфликты и становление клуба.</p>
+        </div>
+
+        <div class="card">
+            <h2>ЧАСТЬ 1</h2>
+            <p>Злоштейн говорит: Ну меня можно изобразить как путешественника по клубам. Потом создавший свой клуб, там встретил Героина который просил присоединиться. Но я отказывался и хотел поддержать тот клуб. Потом я не выдержал и пришёл, через некоторое время он мне дал президента и сказал что он уходит. А дальше я изменял правила клуба, он пришёл и потребовал преза, я дал только вице. Потом кто-то написал оскорбления в описании клуба. Началось расследование: я сказал если не найдёте всех понижу, а участников выгоню. Там через некоторое время прихожу, а там некоторые кикнуты, мандарин и персик спасали клуб от кика путём повышения до вице. Они мне сказали что притворились плохими и оказалось что это Героин, там то он начал оправдываться и говорить что его подставили.</p>
+        </div>
+
+        <div class="card">
+            <h2>ЧАСТЬ 2</h2>
+            <p>Я понизил всех вице, лишь некоторых оставил, иначе бы мне тяжело одному контролировать. Я оправдал это тем, что надо заработать повышение, а не на халяву. Спустя некоторое время он начал придираться к Честеру и меня это бесило, ведь он меня беспокоил (Честер) по поводу Героина, но он тогда не был Героином. Я их кое-как успокоил и правил некоторое время. Принимал идеи, созывал собрания где обсуждали вопросы. Честер предлагал менять президента путём голосования раз в месяц. Я не очень это оценил, ведь я совсем недавно начал правление.</p>
+            <p>Через некоторое время приходит Героин с такой же идеей и он обманом: дай преза на день, завтра обещаю верну. Ну и этот день он меня то понижал то повышал, да и я устал от правления. Тяжело было. На следующий день я потребовал обратно, но он понизил меня с вице на участника и кикнул. Я создал новый клуб, где особо долго не правил. (У меня был такой шок от его наглости не выполнить обещание).</p>
+            <p>Клуб стремительно набирал активность и количество человек увеличивалось. Пришла девка какая-то и попросила вице, я дал на том условии, чтобы она нашла помощников и работала. Оказалось что это Героин и он кикнул клуб, сказав что война началась. Хотя я ему ничего не сделал...</p>
+        </div>
+
+        <div class="card">
+            <h2>ЧАСТЬ 3</h2>
+            <p>Как только он кикнул, меня позвал в клуб какой-то человек, сказал что проблемы. Я пришёл и там я в лобби пришёл к Героину чтобы выяснить причину. Там мы поругались и когда он вышел, то все кто оставались слушали меня. Я объявил о критичном положении и мы начали продумывать план. Мы с твинков следили за его клубом. Честер притворился что он за Героина и доставлял нам информацию: что они делают и кто в нашем клубе его люди. Вроде холдик и смородина ушли в отдельный клуб чтобы спрятаться там, это их клуб был.</p>
+            <p>Затем я с твинка наблюдал за действиями в клубе и притворялся девочкой мелкой. Интересовался, мол, почему война кто есть кто и вёл себя как можно скрытнее. Затем кто-то из их клуба. Не помню его, он заинтересовался что случилось. Я спросил: ты хочешь знать всю правду? Он согласился и я с основы зашёл и рассказал всё как есть. Затем он начал недовольствовать в клубе и вышел. Не помню, присоединился к нам или нет.</p>
+            <p>Я сидел в своём клубе и старался помогать всем. Мы потихоньку поднимались и укреплялись. В клубе Героина я продолжал следить. А потом вроде Игрок (если помнишь его). Сообщил что были в клубе, там ещё назревала междоусобица в клубе Героина те кто говорили: Вечер в хату придумал нам занятия, провёл лучик света и весело было, а с Героином мы как в каменном веке. Ну или что-то на подобии этого.</p>
+            <p>Через некоторое время Я встретился с игроком СССР я старался его переманить к нам, но он меня спалил. После чего пришёл Героин и его дружки с девкой какой-то пришли и он смеясь издевался и кикнул. А они кто смотрел, кто просто интересовался. Девку волновал скриншот где обещание Героина отдать президента. Но так и не смогли связаться с ней.</p>
+            <p>Спустя некоторое время мне Честер предложил получить вице и я зашёл в клуб под ником Данкер, там я получил вице и хотел кикнуть, я старался собрать 'червей' (твинки друзей и тех кто за меня чтобы повысить и Кикать их клуб). Я поговорил с Честером, но он сказал что не стоит Кикать клуб т. к. у него был какой-то план который он держал в секрете, я согласился чтобы провести массовое изгнание в декабре. Но мой пельмень (племянник) MEGA KNIGHT кикнул немного людей и ушёл, я был рад этому событию.</p>
+            <p>Но Честер не рассказал про план, по его словам он там один работает чтобы никто не помешал и он нейтралитет старался держать.</p>
+            <p>Через некоторое время Честер меня сдал и сказал что решил примкнуть к Героину. Я устроил скандал и мы поклялись отомстить. И мы сколько гадостей писали, сколько доводили до слёз. В конце концов мой пельмень вступил в их клуб (естественно изменив профиль чтобы не узнали), встретившись с Честером они начали говорить и так как мой пельмень не знал как правильно написать я ему диктовал слова. Спрашивал: зачем предал вечера ((меня) вечер в хату)? Перекидываться доказательствами, почему Честер не так поступает и про меня тоже говорил. Честер сказал что это я. И я зашёл в лобби, там мы начали вдвоём давить на Честера, он всё кидался своими правдами и говорил что я с Героином как 2 капли воды. Я его обвинял в том что он начал воевать за нас, перешёл на нейтралитет тут я понимал что человек устал и решил не сильно тревожить. Но когда он предал я был в бешенстве. Я с племянником продолжали давить чтобы нанести ему моральный урон. Я говорил ещё: коль начал дело не бросай, а закончи его до конца. Он всё отнекивался что я эгоист, слишком властный и всем от меня плохо. Я сказал: ИСЧЕЗНИ! Он просто кикнул меня из команды и написал в чате команды: исчез. Затем мой племянник написал: сильный не тот кто зол. А силён тот кто силён душой (вроде он так писал, точнее я диктовал).</p>
+            <p>На следующий день я не выдержал и вновь повоевав с Честером старался остановить войну и заключить мир с Героином. Через некоторое время мы с ним встретились и заключили мир. Оба клуба были счастливы, а мы обсуждали новые планы и шаги развития клубов. Решили ещё и праздник устроить. Правда Игрок требовал вернуть мне президента в клубе Фанатов, но я его успокоил и всё хорошо закончилось.</p>
+        </div>
+
+        <div class="card">
+            <h2>ЧАСТЬ 4</h2>
+            <p>Через некоторое время мой клан и клан фанатов стали в упадке и я пришёл к персику. Он дал мне вице и через некоторое время отдал мне клан (оказалось ему угрожали, чтобы он перестал быть президентом и он отдал мне, но я об этом узнал лишь месяц назад). Я начал собирать вице и мы создали группу в которой я собрал всех вице, вместе мы развивали клан. Но в один из дней ко мне пришёл героин, он хотел решить проблему с Честером, но я не хотел лишаться своего ценного рабочего и всячески пытался их примирить, чтобы было больше эффективности в клане. Со временем Героин вышел и я остался, но потом у меня случился сбой и я не мог заходить в Нулс из-за какой-то ошибки, долгое время я передавал приказы через других. Но потом я узнал, что Честер пытался перевести людей из моего клуба в другой, якобы я так передал. К счастью я вовремя решил вопрос и вернувшись отчитал его, да и понизив изгнал с клеймом предателя.</p>
+            <p>...</p>
+            <p>Героин создал клуб и собирал войска, над нами нависла новая угроза войны, мы приготовились. Но к счастью всё обошлось...</p>
+        </div>
+
+        <div class="footer">Союзный клуб © 2024</div>
+    </div>
+
+    <!-- СТРАНИЦА 2: ПТИЧКИ 🐦 -->
+    <div id="page-birds" class="page-container">
+        
+        <div class="card">
+            <h2>Длиннохвостая синица</h2>
+            <img src="bird.png" alt="Синичка" class="bird-image">
+            <p><strong>Порода:</strong> Длиннохвостая синица (ополовник).</p>
+            <p><strong>Описание:</strong> Маленькая пушистая птичка с очень длинным хвостом. Оперение белое, с темными вкраплениями, глаза черные и круглые.</p>
+            <p><strong>Характер:</strong> Очень активные и общительные птицы. Живут стайками, постоянно перекликаются тонкими голосами и не сидят на месте. В стае всегда есть вожак, за которым следуют остальные.</p>
+            <p><strong>Питание:</strong> В основном насекомые и их личинки, которые они находят в кронах деревьев. Зимой могут питаться семенами.</p>
+        </div>
+
+        <div class="card">
+            <h2>Волнистые попугаи (пара)</h2>
+            <img src="bird1.jpg" alt="Два волнистика" class="bird-image">
+            <p><strong>Порода:</strong> Волнистый попугайчик.</p>
+            <p><strong>Описание:</strong> Небольшие птицы с характерным волнистым рисунком на голове и крыльях. Окрас очень разнообразен — от классического зелёного до голубого, жёлтого и белого.</p>
+            <p><strong>Поведение:</strong> На фото видно, как они проявляют заботу друг о друге. Волнистики — социальные птицы, которые нуждаются в общении. Они часто чистят друг другу пёрышки и кормят клюв в клюв, что является знаком симпатии и привязанности.</p>
+            <p><strong>Интересный факт:</strong> Если волнистику скучно, он может начать выщипывать себе перья. Поэтому им так важно общество сородичей или внимание хозяина.</p>
+        </div>
+
+        <div class="card">
+            <h2>Голубой волнистый попугай</h2>
+            <img src="bird2.jpg" alt="Голубой волнистик" class="bird-image">
+            <p><strong>Порода:</strong> Волнистый попугайчик (голубая мутация).</p>
+            <p><strong>Описание:</strong> Элегантный окрас с ярко-голубым брюшком, белой головой и чёрным волнистым рисунком на затылке. Это классическая голубая вариация волнистиков, которая очень популярна среди любителей.</p>
+            <p><strong>Характер:</strong> Эта птичка выглядит очень любознательной. Волнистики легко приручаются, любят играть с зеркальцами и игрушками. Они могут запоминать до нескольких десятков слов и звуков.</p>
+            <p><strong>Почему сердечко?</strong> Волнистые попугаи — одни из самых ласковых домашних птиц. Если они чувствуют заботу, то буквально привязываются к человеку всей душой.</p>
+        </div>
+
+        <div class="footer">Союзный клуб © 2024</div>
+    </div>
+
+    <!-- ПУСТЫЕ СТРАНИЦЫ -->
+    <div id="page-thanks" class="page-container">
+        <div class="card"><h2>Благодарность</h2><p>Пока что пусто</p></div>
+    </div>
+    <div id="page-news" class="page-container">
+        <div class="card"><h2>Новости</h2><p>Пока что пусто</p></div>
+    </div>
+    
+    <!-- СТРАНИЦА 3: СОЗДАТЕЛИ -->
+    <div id="page-creators" class="page-container">
+        <div class="card" style="text-align: center;">
+            <h2 style="text-align: center; border-left: none; border-bottom: 4px solid #FFD700; padding-bottom: 10px; display: inline-block; margin-bottom: 25px;">
+                Создатели приложения
+            </h2>
+            <div class="creators-text">
+                <span class="creator-name creator-kolett">КОЛЕТТ</span>
+                <span style="font-size: 16px; color: #888; font-weight: bold;">И</span>
+                <span class="creator-name creator-zloshtein">ЗЛОШТЕЙН</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- СКРИПТ -->
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const menuBtn = document.getElementById('menuBtn');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            menuBtn.classList.toggle('active');
+        }
+
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page-container');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            const selectedPage = document.getElementById(pageId);
+            selectedPage.classList.add('active');
+            
+            // Перезапуск анимации карточек при переходе
+            const cards = selectedPage.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.style.animation = 'none';
+                card.offsetHeight; /* trigger reflow */
+                card.style.animation = null; 
+            });
+
+            toggleMenu();
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
